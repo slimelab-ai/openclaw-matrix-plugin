@@ -26,6 +26,13 @@ export type MatrixDmConfig = {
   threadReplies?: "off" | "inbound" | "always";
 };
 
+export type MatrixKeywordConfig = {
+  /** Keywords that trigger bot responses (regex patterns or plain strings). */
+  words?: string[];
+  /** If true, respond to keywords in addition to mentions. If false, only respond to keywords. */
+  includeMentions?: boolean;
+};
+
 export type MatrixRoomConfig = {
   /** Restrict this room entry to a specific Matrix account in multi-account setups. */
   account?: string;
@@ -33,6 +40,8 @@ export type MatrixRoomConfig = {
   enabled?: boolean;
   /** Require mentioning the bot to trigger replies. */
   requireMention?: boolean;
+  /** Keyword trigger configuration for this room (combined with global keywords). */
+  keywords?: MatrixKeywordConfig;
   /**
    * Allow messages from other configured Matrix bot accounts.
    * true accepts all configured bot senders; "mentions" requires they mention this bot.
@@ -148,6 +157,8 @@ export type MatrixConfig = {
   replyToMode?: ReplyToMode;
   /** How to handle thread replies (off|inbound|always). */
   threadReplies?: "off" | "inbound" | "always";
+  /** Global keyword trigger configuration (can be overridden per-room). */
+  keywords?: MatrixKeywordConfig;
   /** Outbound text chunk size (chars). Default: 4000. */
   textChunkLimit?: number;
   /** Chunking mode: "length" (default) splits by size; "newline" splits on every newline. */

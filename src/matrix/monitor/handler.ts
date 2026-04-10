@@ -47,6 +47,7 @@ import type { MatrixInboundEventDeduper } from "./inbound-dedupe.js";
 import { resolveMatrixLocation, type MatrixLocationPayload } from "./location.js";
 import { downloadMatrixMedia } from "./media.js";
 import { resolveMentions } from "./mentions.js";
+import { matchesKeywords, resolveKeywordConfig } from "./keywords.js";
 import { handleInboundMatrixReaction } from "./reaction-events.js";
 import { deliverMatrixReplies } from "./replies.js";
 import { createMatrixReplyContextResolver } from "./reply-context.js";
@@ -833,6 +834,20 @@ export function createMatrixRoomMessageHandler(params: MatrixMonitorHandlerParam
                 ? roomConfig?.requireMention
                 : true
           : false;
+        
+        // Keyword detection for rooms with keyword config
+        const keywordConfig = resolveKeywordConfig({
+          roomId,
+          roomAlias: roomCanonicalAlias,
+          globalKeywords: cfg.keywords?.words,
+          roomKeywordsConfig: roomConfig?.keywords,
+        });
+        const keywordMatched = isRoom && keywordConfig.keywordPatterns.length > 0
+          ? matchesKeywords({ text: mentionPrecheckText, keywordPatterns: keywordConfig.keywordPatterns })
+          : false;
+        
+        // Allow keyword triggers in configured rooms
+        const shouldBypassKeywordCheck = isRoom && shouldRequireMention && !wasMentioned && keywordMatched;
         const shouldBypassMention =
           allowTextCommands &&
           isRoom &&
@@ -842,7 +857,7 @@ export function createMatrixRoomMessageHandler(params: MatrixMonitorHandlerParam
           commandAuthorized &&
           hasControlCommandInMessage;
         const canDetectMention = agentMentionRegexes.length > 0 || hasExplicitMention;
-        if (isRoom && shouldRequireMention && !wasMentioned && !shouldBypassMention) {
+        if (isRoom && shouldRequireMention && !wasMentioned && !shouldBypassMention && !shouldBypassKeywordCheck) {
           const pendingHistoryBody = pendingHistoryText || pendingHistoryPollText;
           if (historyLimit > 0 && pendingHistoryBody) {
             const pendingEntry: HistoryEntry = {
