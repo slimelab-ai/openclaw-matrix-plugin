@@ -36,31 +36,27 @@ export function matchesKeywords(params: {
 }
 
 /**
- * Global keyword configuration.
- */
-export const DEFAULT_KEYWORDS: string[] = [];
-
-/**
- * Room-specific keyword configuration for Scoob.
- * Respond to keywords only in specified rooms, require mentions elsewhere.
- */
-export const KEYWORD_WHITELIST_ROOMS: Record<string, { keywords: string[]; includeMentions: boolean }> = {
-  // #scoob-admin - respond to keywords here
-  // Room ID will be resolved from alias at runtime
-  "#scoob-admin:cclub.cs.wmich.edu": {
-    keywords: ["scoob*", "*hound"],
-    includeMentions: true,
-  },
-  // #the-doghouse - respond to keywords here  
-  "#the-doghouse:cclub.cs.wmich.edu": {
-    keywords: ["scoob*", "*hound"],
-    includeMentions: true,
-  },
-};
-
-/**
  * Resolve effective keyword config for a room.
- * Combines global and room-specific keywords.
+ * Combines global and room-specific keywords from configuration.
+ * 
+ * Configuration:
+ * - Global keywords: channels.matrix.keywords.words (array of patterns)
+ * - Room keywords: channels.matrix.rooms["!roomId"].keywords.words
+ * - Room includeMentions: channels.matrix.rooms["!roomId"].keywords.includeMentions
+ * 
+ * Example config:
+ * {
+ *   "channels": {
+ *     "matrix": {
+ *       "keywords": { "words": ["scoob*", "*hound"] },
+ *       "rooms": {
+ *         "!roomid:server": {
+ *           "keywords": { "words": ["custom-pattern"], "includeMentions": true }
+ *         }
+ *       }
+ *     }
+ *   }
+ * }
  */
 export function resolveKeywordConfig(params: {
   roomId: string;
@@ -83,13 +79,6 @@ export function resolveKeywordConfig(params: {
     if (params.roomKeywordsConfig.includeMentions !== undefined) {
       includeMentions = params.roomKeywordsConfig.includeMentions;
     }
-  }
-
-  // Legacy: Check KEYWORD_WHITELIST_ROOMS by alias
-  if (params.roomAlias && KEYWORD_WHITELIST_ROOMS[params.roomAlias]) {
-    const roomConfig = KEYWORD_WHITELIST_ROOMS[params.roomAlias];
-    keywords.push(...roomConfig.keywords);
-    includeMentions = roomConfig.includeMentions;
   }
 
   return {

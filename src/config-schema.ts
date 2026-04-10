@@ -47,6 +47,10 @@ const matrixRoomSchema = z
     enabled: z.boolean().optional(),
     requireMention: z.boolean().optional(),
     allowBots: z.union([z.boolean(), z.literal("mentions")]).optional(),
+    keywords: z.object({
+      words: z.array(z.string()).optional(),
+      includeMentions: z.boolean().optional(),
+    }).optional(),
     tools: ToolPolicySchema,
     autoReply: z.boolean().optional(),
     users: AllowFromListSchema,
@@ -103,6 +107,9 @@ export const MatrixConfigSchema = z.object({
   autoJoin: z.enum(["always", "allowlist", "off"]).optional(),
   autoJoinAllowlist: AllowFromListSchema,
   groupAllowFrom: AllowFromListSchema,
+  keywords: z.object({
+    words: z.array(z.string()).optional(),
+  }).optional(),
   dm: buildNestedDmConfigSchema({
     sessionScope: z.enum(["per-user", "per-room"]).optional(),
     threadReplies: z.enum(["off", "inbound", "always"]).optional(),
