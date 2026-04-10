@@ -75,7 +75,7 @@ Keywords that apply to enabled Matrix rooms:
   "channels": {
     "matrix": {
       "keywords": {
-        "words": ["sco*b*", "*hound"]
+        "words": ["/scoo+b[a-zA-Z]*/", "/[a-zA-Z]*hound/"]
       },
       "rooms": {
         "!roomid:server": {
