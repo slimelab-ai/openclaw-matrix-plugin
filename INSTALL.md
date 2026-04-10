@@ -33,7 +33,8 @@ cd /path/to/openclaw-matrix-plugin
 2. **Install dependencies:**
    
    ```bash
-   ssh user@donghouse "cd ~/.openclaw/extensions/matrix && pnpm install @sinclair/typebox @matrix-org/matrix-sdk-crypto-nodejs markdown-it music-metadata --ignore-scripts"
+   cd ~/.openclaw/extensions/matrix
+   pnpm install @sinclair/typebox @matrix-org/matrix-sdk-crypto-nodejs matrix-js-sdk markdown-it music-metadata --ignore-scripts
    ```
 
 3. **Configure OpenClaw to load the plugin first:**
@@ -142,7 +143,7 @@ Should show no errors related to `channels.matrix`.
 **Missing dependencies:**
 ```bash
 cd ~/.openclaw/extensions/matrix
-pnpm install @sinclair/typebox @matrix-org/matrix-sdk-crypto-nodejs markdown-it music-metadata --ignore-scripts
+pnpm install @sinclair/typebox @matrix-org/matrix-sdk-crypto-nodejs matrix-js-sdk markdown-it music-metadata --ignore-scripts
 ```
 
 **Plugin ID mismatch:**

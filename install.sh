@@ -16,13 +16,11 @@ set -e
 # Configuration
 PLUGIN_NAME="matrix"
 PLUGIN_DIR="$(cd "$(dirname "$0")" && pwd)"
-EXTENSIONS_DIR="\$HOME/.openclaw/extensions"
-DEPENDENCIES="@sinclair/typebox @matrix-org/matrix-sdk-crypto-nodejs markdown-it music-metadata"
+DEPENDENCIES="@sinclair/typebox @matrix-org/matrix-sdk-crypto-nodejs matrix-js-sdk markdown-it music-metadata"
 
 # Parse arguments
 HOSTNAME="${1:-localhost}"
 USERNAME="${2:-$(whoami)}"
-TARGET_USER="${USERNAME}"
 
 # Colors
 RED='\033[0;31m'
@@ -41,22 +39,27 @@ if [ "$HOSTNAME" = "localhost" ]; then
     SSH_CMD=""
     TARGET_DIR="$HOME/.openclaw/extensions/$PLUGIN_NAME"
 else
-    SSH_CMD="ssh $TARGET_USER@$HOSTNAME"
-    TARGET_DIR="$EXTENSIONS_DIR/$PLUGIN_NAME"
+    SSH_CMD="ssh $USERNAME@$HOSTNAME"
+    TARGET_DIR=".openclaw/extensions/$PLUGIN_NAME"
+    REMOTE_HOME=$($SSH_CMD "echo \$HOME")
 fi
 
 log_info "Installing OpenClaw Matrix Plugin to $HOSTNAME"
 
 # Step 1: Create extensions directory
 log_info "Creating extensions directory..."
-$SSH_CMD mkdir -p "$(dirname "$TARGET_DIR")"
+if [ -n "$SSH_CMD" ]; then
+    $SSH_CMD "mkdir -p ~/.openclaw/extensions/$PLUGIN_NAME"
+else
+    mkdir -p "$TARGET_DIR"
+fi
 
 # Step 2: Sync plugin source
 log_info "Syncing plugin source..."
 if [ -n "$SSH_CMD" ]; then
     rsync -avz --exclude='node_modules' --exclude='.git' --exclude='*.log' \
         "$PLUGIN_DIR/" \
-        "$TARGET_USER@$HOSTNAME:$TARGET_DIR/"
+        "$USERNAME@$HOSTNAME:.openclaw/extensions/$PLUGIN_NAME/"
 else
     # Local install - copy files
     mkdir -p "$TARGET_DIR"
@@ -68,7 +71,7 @@ fi
 # Step 3: Install dependencies
 log_info "Installing dependencies..."
 if [ -n "$SSH_CMD" ]; then
-    $SSH_CMD "cd $TARGET_DIR && pnpm install $DEPENDENCIES --ignore-scripts"
+    $SSH_CMD "cd ~/.openclaw/extensions/$PLUGIN_NAME && pnpm install $DEPENDENCIES --ignore-scripts"
 else
     cd "$TARGET_DIR"
     pnpm install $DEPENDENCIES --ignore-scripts
@@ -76,11 +79,10 @@ fi
 
 # Step 4: Check OpenClaw config
 log_info "Checking OpenClaw configuration..."
-CONFIG_FILE="\$HOME/.openclaw/openclaw.json"
 
 if [ -n "$SSH_CMD" ]; then
     # Check if plugins.load.paths exists
-    if $SSH_CMD "grep -q 'plugins.load.paths' $CONFIG_FILE 2>/dev/null"; then
+    if $SSH_CMD "grep -q 'plugins.load.paths' ~/.openclaw/openclaw.json 2>/dev/null"; then
         log_warn "plugins.load.paths already configured - verify it includes this plugin"
     else
         log_info "Adding plugins.load.paths to config..."
@@ -100,7 +102,7 @@ if 'load' not in config['plugins']:
 if 'paths' not in config['plugins']['load']:
     config['plugins']['load']['paths'] = []
 
-plugin_path = os.path.expanduser('$TARGET_DIR/index.ts')
+plugin_path = os.path.expanduser('~/.openclaw/extensions/matrix/index.ts')
 if plugin_path not in config['plugins']['load']['paths']:
     config['plugins']['load']['paths'].insert(0, plugin_path)
 
@@ -153,7 +155,7 @@ echo ""
 echo "Config example:"
 echo '{'
 echo '  "plugins": {'
-echo '    "load": { "paths": ["'$TARGET_DIR/index.ts'"] }'
+echo '    "load": { "paths": ["~/.openclaw/extensions/matrix/index.ts"] }'
 echo '  },'
 echo '  "channels": {'
 echo '    "matrix": {'
