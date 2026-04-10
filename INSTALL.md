@@ -92,12 +92,14 @@ Note: `keywordsEnabled` defaults to `false`. You must explicitly set it to `true
 
 #### Keyword Pattern Syntax
 
-| Pattern | Matches | Example |
-|---------|---------|---------|
-| `word` | Exact word (with boundaries) | `bot` matches "bot" but not "bottle" |
-| `bot*` | Prefix wildcard - "bot" + anything | `bot*` matches: bot, bots, botname |
-| `*bot` | Suffix wildcard - anything + "bot" | `*bot` matches: bot, chatbot, testbot |
-| `sco*b*` | Multiple wildcards | `sco*b*` matches: scoob, scoooob, scoooobert |
+| Pattern | Type | Matches | Example |
+|---------|------|---------|---------|
+| `word` | Exact | Word with boundaries | `bot` matches "bot" but not "bottle" |
+| `bot*` | Wildcard | Prefix + anything | `bot*` matches: bot, bots, botname |
+| `*bot` | Wildcard | Anything + suffix | `*bot` matches: bot, chatbot, testbot |
+| `/regex/` | Raw regex | Full regex support | `/sco+b.*/` matches: scoob, scoooobert (one or more o's) but NOT scosdfbert |
+
+**Note:** `keywordsEnabled` defaults to `false`. You must explicitly set it to `true` for keywords to work in a room.
 
 ## Verification
 
