@@ -2,16 +2,28 @@ import { normalizeLowercaseStringOrEmpty } from "openclaw/plugin-sdk/text-runtim
 
 /**
  * Build a regex pattern for keyword matching.
- * Handles patterns like:
- * - "scoob*" -> matches "scoob", "scoober", "scoooooob", "scooby"
- * - "*hound" -> matches "shithound", "dirthound", "hound"
+ * 
+ * Supports:
+ * - Wildcards: "bot*" → "bot.*" (bot followed by anything)
+ * - Regex patterns: "/sco+b.*/" (raw regex, matches one or more o's)
+ * - Exact match: "word" (with word boundaries)
  */
 export function buildKeywordPattern(keyword: string): RegExp {
+  // Check if it's a regex pattern (wrapped in /.../)
+  if (keyword.startsWith("/") && keyword.endsWith("/")) {
+    const regexBody = keyword.slice(1, -1);
+    try {
+      return new RegExp(`(^|[^a-zA-Z0-9_])(${regexBody})($|[^a-zA-Z0-9_])`, "i");
+    } catch {
+      // Invalid regex, fall back to wildcard treatment
+    }
+  }
+  
   // Escape special regex chars except * (wildcard)
-  const escaped = keyword.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
-  // Replace escaped * with .* (match any suffix/prefix)
-  const pattern = escaped.replace(/\\\*/g, '.*');
-  return new RegExp(`(^|[^a-zA-Z0-9_])${pattern}($|[^a-zA-Z0-9_])`, 'i');
+  const escaped = keyword.replace(/[.+?^${}()|[\]\\]/g, "\\$&");
+  // Replace escaped * with .* (match any characters)
+  const pattern = escaped.replace(/\\\*/g, ".*");
+  return new RegExp(`(^|[^a-zA-Z0-9_])${pattern}($|[^a-zA-Z0-9_])`, "i");
 }
 
 /**
@@ -37,37 +49,12 @@ export function matchesKeywords(params: {
 
 /**
  * Resolve effective keyword config for a room.
- * 
- * Two modes:
- * 1. Global keywords + room keywordsEnabled flag:
- *    - Set global keywords at channels.matrix.keywords.words
- *    - Set keywordsEnabled: true in room config to enable
- * 
- * 2. Per-room keywords (legacy):
- *    - Set keywords.words directly in room config
- * 
- * Configuration:
- * - Global keywords: channels.matrix.keywords.words (array of patterns)
- * - Room enable: channels.matrix.rooms["!roomId"].keywordsEnabled = true
- * - Room keywords: channels.matrix.rooms["!roomId"].keywords.words
- * 
- * Example config:
- * {
- *   "channels": {
- *     "matrix": {
- *       "keywords": { "words": ["scoob*", "*hound"] },
- *       "rooms": {
- *         "!roomId:server": { "keywordsEnabled": true }
- *       }
- *     }
- *   }
- * }
  */
 export function resolveKeywordConfig(params: {
   roomId: string;
   roomAlias?: string;
   globalKeywords?: string[];
-  roomKeywordsEnabled?: boolean; // defaults to false - must be explicitly set to true;
+  roomKeywordsEnabled?: boolean;
   roomKeywordsConfig?: { words?: string[]; includeMentions?: boolean };
 }): {
   keywords: string[];
