@@ -839,7 +839,7 @@ export function createMatrixRoomMessageHandler(params: MatrixMonitorHandlerParam
         const keywordConfig = resolveKeywordConfig({
           roomId,
           roomAlias: roomInfoForConfig?.canonicalAlias,
-          globalKeywords: cfg.keywords?.words,
+          globalKeywords: (cfg.channels as any)?.matrix?.keywords?.words,
           roomKeywordsConfig: roomConfig?.keywords,
         });
         const keywordMatched = isRoom && keywordConfig.keywordPatterns.length > 0
