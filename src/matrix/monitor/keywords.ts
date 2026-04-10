@@ -37,12 +37,19 @@ export function matchesKeywords(params: {
 
 /**
  * Resolve effective keyword config for a room.
- * Combines global and room-specific keywords from configuration.
+ * 
+ * Two modes:
+ * 1. Global keywords + room keywordsEnabled flag:
+ *    - Set global keywords at channels.matrix.keywords.words
+ *    - Set keywordsEnabled: true in room config to enable
+ * 
+ * 2. Per-room keywords (legacy):
+ *    - Set keywords.words directly in room config
  * 
  * Configuration:
  * - Global keywords: channels.matrix.keywords.words (array of patterns)
+ * - Room enable: channels.matrix.rooms["!roomId"].keywordsEnabled = true
  * - Room keywords: channels.matrix.rooms["!roomId"].keywords.words
- * - Room includeMentions: channels.matrix.rooms["!roomId"].keywords.includeMentions
  * 
  * Example config:
  * {
@@ -50,9 +57,7 @@ export function matchesKeywords(params: {
  *     "matrix": {
  *       "keywords": { "words": ["scoob*", "*hound"] },
  *       "rooms": {
- *         "!roomid:server": {
- *           "keywords": { "words": ["custom-pattern"], "includeMentions": true }
- *         }
+ *         "!roomId:server": { "keywordsEnabled": true }
  *       }
  *     }
  *   }
@@ -62,16 +67,22 @@ export function resolveKeywordConfig(params: {
   roomId: string;
   roomAlias?: string;
   globalKeywords?: string[];
+  roomKeywordsEnabled?: boolean;
   roomKeywordsConfig?: { words?: string[]; includeMentions?: boolean };
 }): {
   keywords: string[];
   includeMentions: boolean;
   keywordPatterns: RegExp[];
 } {
-  const keywords: string[] = [...(params.globalKeywords || [])];
+  let keywords: string[] = [];
   let includeMentions = true;
 
-  // Check room-specific config
+  // If room has keywordsEnabled flag, use global keywords
+  if (params.roomKeywordsEnabled && params.globalKeywords) {
+    keywords = [...params.globalKeywords];
+  }
+
+  // Also allow per-room keywords (merged)
   if (params.roomKeywordsConfig) {
     if (params.roomKeywordsConfig.words) {
       keywords.push(...params.roomKeywordsConfig.words);

@@ -40,6 +40,8 @@ export type MatrixRoomConfig = {
   enabled?: boolean;
   /** Require mentioning the bot to trigger replies. */
   requireMention?: boolean;
+  /** Enable keyword triggers for this room (uses global keywords). */
+  keywordsEnabled?: boolean;
   /** Keyword trigger configuration for this room (combined with global keywords). */
   keywords?: MatrixKeywordConfig;
   /**
@@ -239,3 +241,6 @@ export type CoreConfig = {
   secrets?: OpenClawConfig["secrets"];
   [key: string]: unknown;
 };
+
+// Added: keywordsEnabled flag for per-room keyword enablement
+// When global keywords are set, use keywordsEnabled: true in room config to enable them
