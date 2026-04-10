@@ -15,7 +15,7 @@ Set default keywords for all rooms:
   "channels": {
     "matrix": {
       "keywords": {
-        "words": ["scoob*", "*hound", "botname"]
+        "words": ["bot*", "assistant*", "help"]
       }
     }
   }
@@ -31,10 +31,10 @@ Configure keywords for specific rooms:
   "channels": {
     "matrix": {
       "rooms": {
-        "!CUqbYAuoIkIOvzXnCA:cclub.cs.wmich.edu": {
+        "!roomid:server": {
           "requireMention": true,
           "keywords": {
-            "words": ["scoob*", "*hound"],
+            "words": ["bot*", "assistant"],
             "includeMentions": true
           }
         }
@@ -50,8 +50,8 @@ Patterns support wildcards using `*`:
 
 | Pattern | Matches |
 |---------|---------|
-| `scoob*` | "scoob", "scoober", "scooby", "scoooooob" |
-| `*hound` | "hound", "shithound", "dirthound" |
+| `bot*` | "bot", "bots", "botname", "bottest" |
+| `*bot` | "bot", "chatbot", "testbot" |
 | `word` | Exact match with word boundaries |
 | `multi*word` | "multiword", "multi-word" |
 
@@ -111,5 +111,5 @@ In this configuration:
 
 ## Related
 
-- [Room Configuration](./Room-Config.md)
+- [Configuration](./Configuration.md)
 - [AGENTS.md](../AGENTS.md) - Development guide

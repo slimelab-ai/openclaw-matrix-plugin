@@ -2,49 +2,61 @@
 
 ## Table of Contents
 
-### Configuration
-- [Keyword Mentions](./Keyword-Mentions.md) - Configure keyword-based message triggers
-- [Room Configuration](./Room-Config.md) - Per-room settings
-- [Global Configuration](./Global-Config.md) - Plugin-wide settings
+### Getting Started
+- [Configuration](./Configuration.md) - Complete configuration reference
+- [Keyword Mentions](./Keyword-Mentions.md) - Keyword-based triggers
+- [Encryption](./Encryption.md) - E2EE setup and verification
+
+### Architecture
+- [Architecture](./Architecture.md) - Plugin architecture overview
+- [Message Flow](./Message-Flow.md) - How messages are processed
+- [Client SDK](./Client-SDK.md) - Matrix SDK wrapper
 
 ### Development
 - [AGENTS.md](../AGENTS.md) - Development workflow and best practices
-- [Architecture](./Architecture.md) - Plugin architecture overview
+- [Testing](./Testing.md) - Running tests
+- [Contributing](./Contributing.md) - How to contribute
+
+### Reference
+- [Configuration Schema](./Config-Schema.md) - All configuration options
+- [CLI Commands](./CLI-Commands.md) - Matrix CLI reference
 
 ## About
 
 This plugin enables OpenClaw to interact with Matrix homeservers, supporting:
-- Direct messages and group rooms
-- Encrypted messaging (E2EE)
-- Keyword-based triggers
-- Thread support
-- Rich media handling
+
+- **Messaging**: Direct messages and group rooms
+- **Encryption**: E2EE with cross-signing verification  
+- **Keywords**: Trigger responses without @mention
+- **Threading**: Reply threads for conversations
+- **Bots**: First-class bot support
 
 ## Quick Start
 
-1. Configure in `openclaw.json`:
+1. Install OpenClaw with Matrix plugin
+2. Configure in `openclaw.json`:
 ```json
 {
   "channels": {
     "matrix": {
       "homeserver": "https://matrix.org",
-      "userId": "@bot:matrix.org",
+      "userId": "@bot:server.org",
       "accessToken": { "$secret": "MATRIX_TOKEN" }
     }
   }
 }
 ```
 
-2. Optional: Configure keyword keywords:
+3. Optional: Configure keywords:
 ```json
 {
   "channels": {
     "matrix": {
+      "keywords": { "words": ["botname*", "*bot"] },
       "rooms": {
-        "!roomid:server": {
-          "keywords": {
-            "words": ["scoob*", "*hound"]
-          }
+        "!room:server": {
+          "requireMention": true,
+          "keywords": { "words": ["trigger"] }
         }
       }
     }
@@ -52,4 +64,44 @@ This plugin enables OpenClaw to interact with Matrix homeservers, supporting:
 }
 ```
 
-Last updated: 2026-04-10
+## Features
+
+### Keyword Mentions
+
+Configure keywords that bypass mention requirements:
+
+| Pattern | Matches |
+|---------|---------|
+| `scoob*` | "scoob", "scoober", "scooby" |
+| `*hound` | "hound", "greyhound", "shorthound" |
+| `word` | Exact word match |
+
+See [Keyword Mentions](./Keyword-Mentions.md) for details.
+
+### Encryption
+
+E2EE support with:
+- Device verification
+- Cross-signing
+- Key backup
+- Recovery from backup
+
+See [Encryption](./Encryption.md) for setup.
+
+### Room Configuration
+
+Per-room settings for:
+- Mention requirements
+- Keyword triggers  
+- Bot handling
+- Tool policies
+
+See [Configuration](./Configuration.md) for details.
+
+## Version
+
+Current version: 2026.4.9
+
+---
+
+*Last updated: 2026-04-10*

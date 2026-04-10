@@ -26,7 +26,7 @@ Set default keywords for all rooms:
   "channels": {
     "matrix": {
       "keywords": {
-        "words": ["scoob*", "*hound"]
+        "words": ["bot*", "assistant*"]
       }
     }
   }
@@ -44,7 +44,7 @@ Configure keywords for specific rooms:
       "rooms": {
         "!roomid:server": {
           "keywords": {
-            "words": ["scoob*", "*hound"],
+            "words": ["bot*", "helper"],
             "includeMentions": true
           }
         }
@@ -57,8 +57,8 @@ Configure keywords for specific rooms:
 #### Keyword Patterns
 
 Patterns support wildcards:
-- `scoob*` - Matches "scoob", "scoober", "scooby", etc.
-- `*hound` - Matches "hound", "shithound", "dirthound", etc.
+- `bot*` - Matches: `bot`, `bots`, `botname`, `bottest`
+- `*bot` - Matches: `bot`, `chatbot`, `testbot`
 - `word` - Exact match (with word boundaries)
 
 ## Development Workflow
