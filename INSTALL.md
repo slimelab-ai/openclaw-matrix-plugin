@@ -68,34 +68,19 @@ cd /path/to/openclaw-matrix-plugin
 
 ### Global Keywords
 
-Keywords that apply to all Matrix rooms:
+Keywords that apply to enabled Matrix rooms:
 
 ```json
 {
   "channels": {
     "matrix": {
       "keywords": {
-        "words": ["scoob*", "*hound", "bot*", "assistant*"]
-      }
-    }
-  }
-}
-```
-
-### Per-Room Keywords
-
-Override keywords for specific rooms:
-
-```json
-{
-  "channels": {
-    "matrix": {
+        "words": ["sco*b*", "*hound"]
+      },
       "rooms": {
         "!roomid:server": {
-          "keywords": {
-            "words": ["custom*", "pattern"],
-            "includeMentions": true
-          }
+          "requireMention": true,
+          "keywordsEnabled": true
         }
       }
     }
@@ -103,14 +88,16 @@ Override keywords for specific rooms:
 }
 ```
 
-### Keyword Pattern Syntax
+Note: `keywordsEnabled` defaults to `false`. You must explicitly set it to `true` for keywords to work in a room.
+
+#### Keyword Pattern Syntax
 
 | Pattern | Matches | Example |
 |---------|---------|---------|
 | `word` | Exact word (with boundaries) | `bot` matches "bot" but not "bottle" |
-| `bot*` | Prefix wildcard | `bot*` matches: bot, bots, botname, botty |
-| `*bot` | Suffix wildcard | `*bot` matches: bot, chatbot, testbot |
-| `*bot*` | Contains | `*bot*` matches: bot, robotic, debug |
+| `bot*` | Prefix wildcard - "bot" + anything | `bot*` matches: bot, bots, botname |
+| `*bot` | Suffix wildcard - anything + "bot" | `*bot` matches: bot, chatbot, testbot |
+| `sco*b*` | Multiple wildcards | `sco*b*` matches: scoob, scoooob, scoooobert |
 
 ## Verification
 

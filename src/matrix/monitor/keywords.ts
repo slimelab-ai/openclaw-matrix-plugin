@@ -67,7 +67,7 @@ export function resolveKeywordConfig(params: {
   roomId: string;
   roomAlias?: string;
   globalKeywords?: string[];
-  roomKeywordsEnabled?: boolean;
+  roomKeywordsEnabled?: boolean; // defaults to false - must be explicitly set to true;
   roomKeywordsConfig?: { words?: string[]; includeMentions?: boolean };
 }): {
   keywords: string[];
