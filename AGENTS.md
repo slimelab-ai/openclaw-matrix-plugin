@@ -61,6 +61,15 @@ Patterns support wildcards:
 - `*bot` - Matches: `bot`, `chatbot`, `testbot`
 - `word` - Exact match (with word boundaries)
 
+## Installation
+
+See [INSTALL.md](./INSTALL.md) for detailed installation instructions.
+
+Quick install:
+```bash
+./install.sh donghouse  # or target hostname
+```
+
 ## Development Workflow
 
 1. **Create feature branch** from main
@@ -70,6 +79,7 @@ Patterns support wildcards:
 5. **Update documentation** in `wiki/`
 6. **Commit with conventional commits**
 7. **Push and create PR**
+8. **Deploy**: `./install.sh <hostname>`
 
 ## Key Files
 
