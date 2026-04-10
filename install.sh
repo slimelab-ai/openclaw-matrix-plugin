@@ -16,7 +16,7 @@ set -e
 # Configuration
 PLUGIN_NAME="matrix"
 PLUGIN_DIR="$(cd "$(dirname "$0")" && pwd)"
-DEPENDENCIES="@sinclair/typebox @matrix-org/matrix-sdk-crypto-nodejs matrix-js-sdk markdown-it music-metadata"
+DEPENDENCIES="@sinclair/typebox @matrix-org/matrix-sdk-crypto-nodejs matrix-js-sdk markdown-it music-metadata fake-indexeddb"
 
 # Parse arguments
 HOSTNAME="${1:-localhost}"
@@ -133,24 +133,64 @@ else
     fi
 fi
 
-# Step 5: Verify plugin loads
-log_info "Verifying plugin installation..."
+# Step 5: Restart gateway for preflight
+log_info "Restarting gateway for validation..."
 if [ -n "$SSH_CMD" ]; then
-    PLUGIN_STATUS=$($SSH_CMD ". ~/.npm-global/bin/openclaw plugins list 2>&1 | grep -E 'matrix.*loaded.*extensions/matrix' || echo 'NOT_LOADED'")
+    $SSH_CMD "systemctl --user restart openclaw-gateway"
+    sleep 15
+fi
+
+# Step 6: Preflight validation
+log_info "Running preflight validation..."
+
+PREFLIGHT_FAILED=0
+
+if [ -n "$SSH_CMD" ]; then
+    # Check for startup errors
+    ERRORS=$($SSH_CMD "journalctl --user -u openclaw-gateway --since '20 seconds ago' --no-pager 2>&1 | grep -E 'channel exited|Cannot find module' || true")
+    if [ -n "$ERRORS" ]; then
+        log_error "Plugin startup failed with errors:"
+        echo "$ERRORS"
+        PREFLIGHT_FAILED=1
+    fi
+    
+    # Check plugin loaded correctly
+    PLUGIN_STATUS=$($SSH_CMD "node ~/.npm-global/bin/openclaw plugins list 2>&1 | grep -E '^│ matrix.*loaded.*extensions/matrix' || echo 'NOT_LOADED'")
     if echo "$PLUGIN_STATUS" | grep -q "loaded"; then
-        log_success "Plugin loaded successfully"
-        $SSH_CMD ". ~/.npm-global/bin/openclaw plugins list 2>&1 | grep -E 'matrix|@openclaw/matrix' | head -5"
+        log_success "Plugin loaded correctly"
     else
-        log_warn "Plugin may not be loaded - check with: openclaw plugins list"
+        log_error "Plugin not loaded correctly"
+        $SSH_CMD "node ~/.npm-global/bin/openclaw plugins list 2>&1 | grep -E 'matrix|error' | head -10"
+        PREFLIGHT_FAILED=1
+    fi
+    
+    # Check matrix channel started without errors
+    CHANNEL_STATUS=$($SSH_CMD "journalctl --user -u openclaw-gateway --since '30 seconds ago' --no-pager 2>&1 | grep -E '\[matrix\].*starting provider' || echo 'NOT_STARTED'")
+    if echo "$CHANNEL_STATUS" | grep -q "starting provider"; then
+        log_success "Matrix channel started successfully"
+    else
+        log_error "Matrix channel failed to start"
+        PREFLIGHT_FAILED=1
     fi
 fi
 
-log_success "Installation complete!"
+if [ $PREFLIGHT_FAILED -eq 1 ]; then
+    log_error "Preflight validation FAILED - plugin not working correctly"
+    log_info "Check logs: journalctl --user -u openclaw-gateway --since '1 minute ago'"
+    exit 1
+fi
+
+log_success "Installation complete and validated!"
+echo ""
+echo "Summary:"
+echo "  - Plugin loaded from ~/.openclaw/extensions/matrix/index.ts"
+echo "  - Bundled @openclaw/matrix disabled"
+echo "  - Matrix channel running"
+echo "  - Keywords configured: ['scoob*', '*hound']"
 echo ""
 echo "Next steps:"
 echo "  1. Edit ~/.openclaw/openclaw.json to customize keywords"
-echo "  2. Restart OpenClaw: systemctl --user restart openclaw-gateway"
-echo "  3. Verify: openclaw plugins list | grep matrix"
+echo "  2. Test by sending a message with 'scoob' or 'hound' in #scoob-admin"
 echo ""
 echo "Config example:"
 echo '{'
