@@ -62,7 +62,7 @@ export function resolveKeywordConfig(params: {
   roomId: string;
   roomAlias?: string;
   globalKeywords?: string[];
-  roomKeywordsConfig?: { keywords?: string[]; includeMentions?: boolean };
+  roomKeywordsConfig?: { words?: string[]; includeMentions?: boolean };
 }): {
   keywords: string[];
   includeMentions: boolean;
@@ -73,8 +73,8 @@ export function resolveKeywordConfig(params: {
 
   // Check room-specific config
   if (params.roomKeywordsConfig) {
-    if (params.roomKeywordsConfig.keywords) {
-      keywords.push(...params.roomKeywordsConfig.keywords);
+    if (params.roomKeywordsConfig.words) {
+      keywords.push(...params.roomKeywordsConfig.words);
     }
     if (params.roomKeywordsConfig.includeMentions !== undefined) {
       includeMentions = params.roomKeywordsConfig.includeMentions;
