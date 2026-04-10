@@ -838,7 +838,7 @@ export function createMatrixRoomMessageHandler(params: MatrixMonitorHandlerParam
         // Keyword detection for rooms with keyword config
         const keywordConfig = resolveKeywordConfig({
           roomId,
-          roomAlias: roomCanonicalAlias,
+          roomAlias: roomInfoForConfig?.canonicalAlias,
           globalKeywords: cfg.keywords?.words,
           roomKeywordsConfig: roomConfig?.keywords,
         });
