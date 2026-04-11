@@ -15,7 +15,6 @@
       "MATRIX_OPS_DEVICE_NAME"
     ]
   },
-  "skills": ["skills/matrix-indexer"],
   "configSchema": {
     "type": "object",
     "additionalProperties": false,
