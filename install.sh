@@ -146,11 +146,18 @@ log_info "Running preflight validation..."
 PREFLIGHT_FAILED=0
 
 if [ -n "$SSH_CMD" ]; then
-    # Check for startup errors
-    ERRORS=$($SSH_CMD "journalctl --user -u openclaw-gateway --since '20 seconds ago' --no-pager 2>&1 | grep -E 'channel exited|Cannot find module' || true")
+    # Check for startup/syntax errors
+    ERRORS=$($SSH_CMD "journalctl --user -u openclaw-gateway --since '20 seconds ago' --no-pager 2>&1 | grep -E 'channel exited|Cannot find module|ParseError|Cannot read properties' || true")
     if [ -n "$ERRORS" ]; then
         log_error "Plugin startup failed with errors:"
         echo "$ERRORS"
+        PREFLIGHT_FAILED=1
+    fi
+    
+    # Check for repeated channel failures (crash loop)
+    CRASH_COUNT=$($SSH_CMD "journalctl --user -u openclaw-gateway --since '30 seconds ago' --no-pager 2>&1 | grep -c 'channel exited' || echo 0")
+    if [ "$CRASH_COUNT" -ge 3 ]; then
+        log_error "Channel crashed $CRASH_COUNT times in 30 seconds - check for syntax errors"
         PREFLIGHT_FAILED=1
     fi
     
