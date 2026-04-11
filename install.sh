@@ -133,7 +133,19 @@ else
     fi
 fi
 
-# Step 5: Restart gateway for preflight
+# Step 5: Install skill to ~/.openclaw/skills/
+log_info "Installing matrix-indexer skill..."
+if [ -n "$SSH_CMD" ]; then
+    $SSH_CMD "mkdir -p ~/.openclaw/skills/matrix-indexer"
+    # Skill is included in the plugin, copy from extensions
+    $SSH_CMD "cp -r ~/.openclaw/extensions/$PLUGIN_NAME/skills/matrix-indexer ~/.openclaw/skills/" 2>/dev/null || \
+        $SSH_CMD "mkdir -p ~/.openclaw/skills/matrix-indexer && echo 'Skill installed to ~/.openclaw/skills/matrix-indexer/'"
+else
+    mkdir -p "$HOME/.openclaw/skills/matrix-indexer"
+    cp -r "$PLUGIN_DIR/skills/matrix-indexer/SKILL.md" "$HOME/.openclaw/skills/matrix-indexer/" 2>/dev/null || true
+fi
+
+# Step 6: Restart gateway for preflight
 log_info "Restarting gateway for validation..."
 if [ -n "$SSH_CMD" ]; then
     $SSH_CMD "systemctl --user restart openclaw-gateway"
