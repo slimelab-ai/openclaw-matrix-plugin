@@ -155,8 +155,8 @@ if [ -n "$SSH_CMD" ]; then
     fi
     
     # Check for repeated channel failures (crash loop)
-    CRASH_COUNT=$($SSH_CMD "journalctl --user -u openclaw-gateway --since '30 seconds ago' --no-pager 2>&1 | grep -c 'channel exited' || echo 0")
-    if [ "$CRASH_COUNT" -ge 3 ]; then
+    CRASH_COUNT=$($SSH_CMD "journalctl --user -u openclaw-gateway --since '30 seconds ago' --no-pager 2>&1 | grep -c 'channel exited' || echo 0" | tr -d '\n')
+    if [ "${CRASH_COUNT:-0}" -ge 3 ]; then
         log_error "Channel crashed $CRASH_COUNT times in 30 seconds - check for syntax errors"
         PREFLIGHT_FAILED=1
     fi
